@@ -4,28 +4,25 @@ import random
 import copy
 from csv import DictWriter
 
-# DIVISIONS
-WEST_DIVISION: List[str] = ["49ers", "Seahawks", "Rams", "Cardinals"]
-EAST_DIVISION: List[str] = ["Buccaneers", "Saints", "Falcons", "Panthers"]
-SOUTH_DIVISION: List[str] = ["Cowboys", "Eagles", "Giants", "Commanders"]
-
-# WEEKS
-INTERDIVISIONAL_WEEKS: List[int] = [1, 2, 4, 6, 8, 10, 12, 14]
-INTRADIVISIONAL_WEEKS: List[int] = [3, 5, 7, 9, 11, 13]
-PLAYOFF_WEEKS: List[int] = [15, 16, 17]
 
 # CSV
 CSV_COLUMNS: List[str] = ["WEEK", "TEAM1", "TEAM2"]
 
 
 class MatchupCreator:
-    def __init__(self):
+    def __init__(self, west_division: List[str], east_division: List[str], south_division: List[str], interdivisional_weeks: List[int], intradivisional_weeks: List[int], playoff_weeks: List[int]):
         # Keeping this list 1-indexed for simplicity so week == index
         self.all_seasonal_matchups: List[List[Tuple[str]]] = [[]]
+        self.west_division: List[str] = west_division
+        self.east_division: List[str] = east_division
+        self.south_division: List[str] = south_division
+        self.interdivisional_weeks: List[int] = interdivisional_weeks
+        self.intradivisional_weeks: List[int] = intradivisional_weeks
+        self.playoff_weeks: List[int] = playoff_weeks
 
     def intradivisional_matchup_exists_twice(self, current_week: int, team1: str, team2: str) -> bool:
         count: int = 0
-        for week in INTRADIVISIONAL_WEEKS:
+        for week in self.intradivisional_weeks:
             if (week > current_week):
                 break
             if (week <= current_week) and (((team1, team2) in self.all_seasonal_matchups[week]) or ((team2, team1) in self.all_seasonal_matchups[week])):
@@ -36,7 +33,7 @@ class MatchupCreator:
         return False
 
     def interdivisional_matchup_exists(self, current_week: int, team1: str, team2: str) -> bool:
-        for week in INTERDIVISIONAL_WEEKS:
+        for week in self.interdivisional_weeks:
             if (week > current_week):
                 break
             if (week <= current_week) and (((team1, team2) in self.all_seasonal_matchups[week]) or ((team2, team1) in self.all_seasonal_matchups[week])):
@@ -56,10 +53,10 @@ class MatchupCreator:
                 teams.pop(match_index)
                 teams.pop(0)
 
-    def create_interdivisional_matchups(self, week: int, west_division: List[str] = WEST_DIVISION, east_division: List[str] = EAST_DIVISION, south_division: List[str] = SOUTH_DIVISION):
-        west_teams: List[str] = copy.deepcopy(west_division)
-        east_teams: List[str] = copy.deepcopy(east_division)
-        south_teams: List[str] = copy.deepcopy(south_division)
+    def create_interdivisional_matchups(self, week: int):
+        west_teams: List[str] = copy.deepcopy(self.west_division)
+        east_teams: List[str] = copy.deepcopy(self.east_division)
+        south_teams: List[str] = copy.deepcopy(self.south_division)
 
         league: List[List[str]] = [west_teams, east_teams, south_teams]
 
@@ -85,12 +82,12 @@ class MatchupCreator:
     def create_all_seasonal_matchups(self):
         for week in range(1, 18):
             self.all_seasonal_matchups.append([])
-            if week in INTERDIVISIONAL_WEEKS:
+            if week in self.interdivisional_weeks:
                 self.create_interdivisional_matchups(week)
-            if week in INTRADIVISIONAL_WEEKS:
-                self.create_intradivisional_matchups(week, WEST_DIVISION)
-                self.create_intradivisional_matchups(week, EAST_DIVISION)
-                self.create_intradivisional_matchups(week, SOUTH_DIVISION)
+            if week in self.intradivisional_weeks:
+                self.create_intradivisional_matchups(week, self.west_division)
+                self.create_intradivisional_matchups(week, self.east_division)
+                self.create_intradivisional_matchups(week, self.south_division)
 
     def write_matchups_to_csv(self):
         with open("matchups.csv", "w", newline="") as csvfile:
