@@ -4,6 +4,7 @@ from tkinter import scrolledtext
 from typing import List
 from matchups import MatchupCreator
 from tkinter import messagebox
+from tkinter import ttk
 
 
 class MatchupUi:
@@ -38,6 +39,9 @@ class MatchupUi:
         matchup_creator.write_matchups_to_csv()
 
         messagebox.showinfo("Success", "Created matchups in matchups.csv.")
+
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
     
     def on_frame_configure(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
@@ -51,9 +55,14 @@ class MatchupUi:
         # Create canvas
         self.canvas = tk.Canvas(window)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
 
         # Add scrollbar to the canvas
-        self.scrollbar = tk.Scrollbar(self.canvas, orient="vertical", command=self.canvas.yview)
+        # Create and configure a custom style for the scrollbar
+        style = ttk.Style()
+        style.theme_use('default')
+        style.configure("Vertical.TScrollbar", width=20, arrowsize=20, borderwidth=3)
+        self.scrollbar = ttk.Scrollbar(self.canvas, orient="vertical", command=self.canvas.yview, style="Vertical.TScrollbar", cursor="hand1")
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Configure the canvas
@@ -64,7 +73,6 @@ class MatchupUi:
 
         # Add the frame to the canvas
         self.canvas.create_window((170, 0), window=self.frame, anchor="nw")
-
         # Configure the canvas scrolling
         self.frame.bind("<Configure>", self.on_frame_configure)
 
