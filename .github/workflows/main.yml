@@ -31,10 +31,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          tag_name: v1.0.0-${{ runner.os }}  # Use semantic version with OS suffix
-          release_name: Fantasy Football Matchups v1.0.0 (${{ runner.os }})
+          tag_name: v1.0.1-${{ runner.os }}  # Use semantic version with OS suffix
+          release_name: Fantasy Football Matchups v1.0.1 (${{ runner.os }})
           body: |
-            This release builds a ${{ runner.os }} executable for FantasyFootballMatchups (v1.0.0).
+            This release builds a ${{ runner.os }} executable for FantasyFootballMatchups (v1.0.1).
             You can download it from the Assets section below.
           draft: false  # Set to true to create a draft release
 
