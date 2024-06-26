@@ -3,6 +3,7 @@ from typing import List, Tuple
 import random
 import copy
 from csv import DictWriter
+from itertools import permutations
 
 
 # CSV
@@ -12,13 +13,29 @@ CSV_COLUMNS: List[str] = ["WEEK", "TEAM1", "TEAM2"]
 class MatchupCreator:
     def __init__(self, west_division: List[str], east_division: List[str], south_division: List[str], interdivisional_weeks: List[int], intradivisional_weeks: List[int], playoff_weeks: List[int]):
         # Keeping this list 1-indexed for simplicity so week == index
-        self.all_seasonal_matchups: List[List[Tuple[str]]] = [[]]
         self.west_division: List[str] = west_division
         self.east_division: List[str] = east_division
         self.south_division: List[str] = south_division
         self.interdivisional_weeks: List[int] = interdivisional_weeks
         self.intradivisional_weeks: List[int] = intradivisional_weeks
         self.playoff_weeks: List[int] = playoff_weeks
+
+        self.all_division_teams: List[str] = (
+            self.west_division + self.east_division + self.south_division)
+        random.shuffle(self.all_division_teams)
+        self.all_possible_matchups: List[Tuple[str]] = list(
+            permutations(self.all_division_teams, 2))
+
+        # Keeping this list 1-indexed for simplicity so week == index
+        self.all_seasonal_matchups: List[List[Tuple[str]]] = [
+            [] for i in range(18)]
+
+    def already_playing_this_week(self, current_week: int, team: str) -> bool:
+        for matchup in self.all_seasonal_matchups[current_week]:
+            if team in matchup:
+                return True
+
+        return False
 
     def intradivisional_matchup_exists_twice(self, current_week: int, team1: str, team2: str) -> bool:
         count: int = 0
@@ -41,6 +58,18 @@ class MatchupCreator:
 
         return False
 
+    def teams_in_different_divisions(self, team1: str, team2: str) -> bool:
+        if ((team1 in self.west_division) and (team2 in self.west_division)) or ((team1 in self.east_division) and (team2 in self.east_division)) or ((team1 in self.south_division) and (team2 in self.south_division)):
+            return False
+
+        return True
+
+    def is_valid_interdivisional_matchup(self, week: int, team1: str, team2: str):
+        if (team1 != team2) and (not self.already_playing_this_week(week, team1)) and (not self.already_playing_this_week(week, team2)) and (self.teams_in_different_divisions(team1, team2)) and (not self.interdivisional_matchup_exists(week, team1, team2)):
+            return True
+
+        return False
+
     def create_intradivisional_matchups(self, week: int, division: List[str]):
         teams: List[str] = copy.deepcopy(division)
         while len(teams) > 0:
@@ -54,37 +83,20 @@ class MatchupCreator:
                 teams.pop(0)
 
     def create_interdivisional_matchups(self, week: int):
-        west_teams: List[str] = copy.deepcopy(self.west_division)
-        east_teams: List[str] = copy.deepcopy(self.east_division)
-        south_teams: List[str] = copy.deepcopy(self.south_division)
-
-        league: List[List[str]] = [west_teams, east_teams, south_teams]
-
-        while (len(league[0]) > 0) or (len(league[1]) > 0) or (len(league[2]) > 0):
-            division1: List[str] = league[0]
-            division2: List[str] = league[1]
-
-            team1_index: int = random.randrange(0, len(division1))
-            team1: str = division1[team1_index]
-
-            team2_index: int = random.randrange(0, len(division2))
-            team2: str = division2[team2_index]
-
-            if not self.interdivisional_matchup_exists(current_week=week, team1=team1, team2=team2):
-                matchup: Tuple[str] = (team1, team2)
-                self.all_seasonal_matchups[week].append(matchup)
-
-            division1.pop(team1_index)
-            division2.pop(team2_index)
-
-            league = league[1:] + league[:1]
+        while len(self.all_seasonal_matchups[week]) < 6:
+            self.all_seasonal_matchups[week] = []
+            random.shuffle(self.all_possible_matchups)
+            for matchup in self.all_possible_matchups:
+                team1: str = matchup[0]
+                team2: str = matchup[1]
+                if self.is_valid_interdivisional_matchup(week, team1, team2):
+                    self.all_seasonal_matchups[week].append(matchup)
 
     def create_all_seasonal_matchups(self):
         for week in range(1, 18):
-            self.all_seasonal_matchups.append([])
             if week in self.interdivisional_weeks:
                 self.create_interdivisional_matchups(week)
-            if week in self.intradivisional_weeks:
+            elif week in self.intradivisional_weeks:
                 self.create_intradivisional_matchups(week, self.west_division)
                 self.create_intradivisional_matchups(week, self.east_division)
                 self.create_intradivisional_matchups(week, self.south_division)

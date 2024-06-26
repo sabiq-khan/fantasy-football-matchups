@@ -3,12 +3,14 @@ import tkinter as tk
 from tkinter import scrolledtext
 from typing import List
 from matchups import MatchupCreator
+from tkinter import messagebox
 
 
 class MatchupUi:
     def clear(self):
         self.window.destroy()
-        self.window = self.create_ui()
+        self.window: tk.Tk = self.create_ui()
+        self.window.mainloop()
 
     def create_matchups(self):
         west_division: List[str] = self.west_division_input.get(
@@ -35,9 +37,7 @@ class MatchupUi:
         matchup_creator.create_all_seasonal_matchups()
         matchup_creator.write_matchups_to_csv()
 
-        self.result_text = tk.Text(self.window, height=1, width=40)
-        self.result_text.pack(pady=10)
-        self.result_text.insert(tk.END, "Created matchups in matchups.csv.")
+        messagebox.showinfo("Success", "Created matchups in matchups.csv.")
 
     def create_ui(self):
         window = tk.Tk()
