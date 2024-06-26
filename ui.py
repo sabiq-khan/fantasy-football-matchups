@@ -38,6 +38,9 @@ class MatchupUi:
         matchup_creator.write_matchups_to_csv()
 
         messagebox.showinfo("Success", "Created matchups in matchups.csv.")
+    
+    def on_frame_configure(self, event):
+        self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
     def create_ui(self):
         window = tk.Tk()
@@ -45,62 +48,79 @@ class MatchupUi:
         window.geometry("1000x1700")
         window.tk.call("tk", "scaling", 1.5)
 
-        self.label = tk.Label(
-            window, text="Fantasy Football Matchups", font=("Arial", 14))
-        self.label.pack(pady=20)
+        # Create canvas
+        self.canvas = tk.Canvas(window)
+        self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.scrollbar = tk.Scrollbar(window)
+        # Add scrollbar to the canvas
+        self.scrollbar = tk.Scrollbar(self.canvas, orient="vertical", command=self.canvas.yview)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
+        # Configure the canvas
+        self.canvas.configure(yscrollcommand=self.scrollbar.set)
+
+        # Create main frame inside the canvas
+        self.frame = tk.Frame(self.canvas)
+
+        # Add the frame to the canvas
+        self.canvas.create_window((170, 0), window=self.frame, anchor="nw")
+
+        # Configure the canvas scrolling
+        self.frame.bind("<Configure>", self.on_frame_configure)
+
+        self.label = tk.Label(
+            self.frame, text="Fantasy Football Matchups", font=("Arial", 14))
+        self.label.pack(pady=20)
+
         # West division input
-        tk.Label(window, text="Enter west division teams (one per line):").pack(
+        tk.Label(self.frame, text="Enter west division teams (one per line):").pack(
             pady=(10, 0))
         self.west_division_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.west_division_input.pack(pady=(0, 10))
 
         # East division input
-        tk.Label(window, text="Enter east division teams (one per line):").pack(
+        tk.Label(self.frame, text="Enter east division teams (one per line):").pack(
             pady=(10, 0))
         self.east_division_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.east_division_input.pack(pady=(0, 10))
 
         # South division input
-        tk.Label(window, text="Enter south division teams (one per line):").pack(
+        tk.Label(self.frame, text="Enter south division teams (one per line):").pack(
             pady=(10, 0))
         self.south_division_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.south_division_input.pack(pady=(0, 10))
 
         # Non-divisional weeks input
         tk.Label(
-            window, text="Enter non-divisional weeks (one per line):").pack(pady=(10, 0))
+            self.frame, text="Enter non-divisional weeks (one per line):").pack(pady=(10, 0))
         self.nondivisional_week_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.nondivisional_week_input.pack(pady=(0, 10))
 
         # Divisional weeks input
-        tk.Label(window, text="Enter divisional weeks (one per line):").pack(
+        tk.Label(self.frame, text="Enter divisional weeks (one per line):").pack(
             pady=(10, 0))
         self.divisional_week_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.divisional_week_input.pack(pady=(0, 10))
 
         # Playoff weeks input
-        tk.Label(window, text="Enter playoff weeks (one per line):").pack(
+        tk.Label(self.frame, text="Enter playoff weeks (one per line):").pack(
             pady=(10, 0))
         self.playoff_week_input = scrolledtext.ScrolledText(
-            window, width=40, height=5)
+            self.frame, width=40, height=5)
         self.playoff_week_input.pack(pady=(0, 10))
 
         # Button for creating matchups
-        button = tk.Button(window, text="Create matchups",
+        button = tk.Button(self.frame, text="Create matchups",
                            command=lambda: self.create_matchups())
         button.pack(pady=10)
 
         # Button for clearing the window
-        button = tk.Button(window, text="Clear",
+        button = tk.Button(self.frame, text="Clear",
                            command=lambda: self.clear())
         button.pack(pady=10)
 

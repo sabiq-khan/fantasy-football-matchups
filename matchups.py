@@ -12,7 +12,6 @@ CSV_COLUMNS: List[str] = ["WEEK", "TEAM1", "TEAM2"]
 
 class MatchupCreator:
     def __init__(self, west_division: List[str], east_division: List[str], south_division: List[str], interdivisional_weeks: List[int], intradivisional_weeks: List[int], playoff_weeks: List[int]):
-        # Keeping this list 1-indexed for simplicity so week == index
         self.west_division: List[str] = west_division
         self.east_division: List[str] = east_division
         self.south_division: List[str] = south_division
@@ -70,6 +69,16 @@ class MatchupCreator:
 
         return False
 
+    def create_interdivisional_matchups(self, week: int):
+        while len(self.all_seasonal_matchups[week]) < 6:
+            self.all_seasonal_matchups[week] = []
+            random.shuffle(self.all_possible_matchups)
+            for matchup in self.all_possible_matchups:
+                team1: str = matchup[0]
+                team2: str = matchup[1]
+                if self.is_valid_interdivisional_matchup(week, team1, team2):
+                    self.all_seasonal_matchups[week].append(matchup)
+
     def create_intradivisional_matchups(self, week: int, division: List[str]):
         teams: List[str] = copy.deepcopy(division)
         while len(teams) > 0:
@@ -81,16 +90,6 @@ class MatchupCreator:
                 self.all_seasonal_matchups[week].append(matchup)
                 teams.pop(match_index)
                 teams.pop(0)
-
-    def create_interdivisional_matchups(self, week: int):
-        while len(self.all_seasonal_matchups[week]) < 6:
-            self.all_seasonal_matchups[week] = []
-            random.shuffle(self.all_possible_matchups)
-            for matchup in self.all_possible_matchups:
-                team1: str = matchup[0]
-                team2: str = matchup[1]
-                if self.is_valid_interdivisional_matchup(week, team1, team2):
-                    self.all_seasonal_matchups[week].append(matchup)
 
     def create_all_seasonal_matchups(self):
         for week in range(1, 18):
