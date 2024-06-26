@@ -6,6 +6,10 @@ The following rules are taken into account:
 - During divisional weeks, only teams from the same division are matched up. These matchups can occur only twice the entire season.
 
 ## Installation and Build
+### Downloading a release
+Pre-built releases for Windows, MacOS, and Linux can be downloaded from [Releases](https://github.com/sabiq-khan/fantasy-football-matchups/releases).
+
+### Building from source
 1) `git clone` this repo, download it as a `.zip`, or download the `matchups.py` file.
 2) Ensure you have Python 3.10+ installed.
 3) Ensure you have PyInstaller installed, if not run `pip install pyinstaller`.
