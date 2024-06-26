@@ -1,0 +1,48 @@
+name: Build and Release Executable (Multi-OS)
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-release:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]  # Adjust OSes if needed
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies (Linux/macOS)
+        if: runner.os != 'windows-latest'
+        run: sudo apt update && sudo apt install python3-dev libffi-dev build-essential
+
+      - name: Install Chocolatey (Windows)
+        if: runner.os == 'windows-latest'
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::Expect100Continue = $false; Invoke-Expression ([System.Net.WebRequest]::Create('https://chocolatey.org/install.ps1')).Content; choco install python3 -y
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build Executable
+        run: |
+          pyinstaller --name=FantasyFootballMatchups --onefile --windowed main.py
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v1.0.0-${{ runner.os }}  # Use semantic version with OS suffix
+          release_name: Fantasy Football Matchups v1.0.0 (${{ runner.os }})
+          body: |
+            This release builds a ${{ runner.os }} executable for FantasyFootballMatchups (v1.0.0).
+            You can download it from the Assets section below.
+          draft: false  # Set to true to create a draft release
+
+      - name: Upload Executable as Asset
+        uses: actions/upload-artifact@v3
+        with:
+          name: executable_${{ runner.os }}
+          path: dist/FantasyFootballMatchups  # Adjust path if needed
