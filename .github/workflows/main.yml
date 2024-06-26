@@ -13,26 +13,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies (Linux/macOS)
-        if: runner.os != 'windows-latest'
-        run: sudo apt update && sudo apt install python3-dev libffi-dev build-essential
-
-      - name: Install Chocolatey (Windows)
-        if: runner.os == 'windows-latest'
-        run: |
-          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::Expect100Continue = $false; Invoke-Expression ([System.Net.WebRequest]::Create('https://chocolatey.org/install.ps1')).Content; choco install python3 -y
-
       - name: Install PyInstaller
-        run: pip install pyinstaller
+        run: pip install pyinstaller tk
+
+      - name: Install Tkinter (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt install -y python3-tk
 
       - name: Build Executable
         run: |
-          pyinstaller --name=FantasyFootballMatchups --onefile --windowed main.py
+          pyinstaller --hidden-import=tkinter --hidden-import=tkinter.filedialog --name=FantasyFootballMatchups --onefile --windowed main.py
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
           tag_name: v1.0.0-${{ runner.os }}  # Use semantic version with OS suffix
           release_name: Fantasy Football Matchups v1.0.0 (${{ runner.os }})
@@ -42,7 +39,11 @@ jobs:
           draft: false  # Set to true to create a draft release
 
       - name: Upload Executable as Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
-          name: executable_${{ runner.os }}
-          path: dist/FantasyFootballMatchups  # Adjust path if needed
+          asset_path: dist/FantasyFootballMatchups${{ runner.os == 'Windows' && '.exe' || '' }}  # Adjust path if needed
+          asset_name: FantasyFootballMatchups${{ runner.os == 'Windows' && '.exe' || '' }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_content_type: application/zip
