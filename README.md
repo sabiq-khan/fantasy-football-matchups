@@ -25,7 +25,7 @@ Click the `Create Matchups` button to generate fantasy matchups which will be wr
 
 The output will be written to a `matchups.csv` file in the same directory as the script. This file can be opened in Excel on Windows, Numbers on Mac, and LibreOffice Calc on Linux for ease of viewing.
 
-![CSV](image.png)
+![CSV](images/image1.png)
 
 ## Feedback
 Feel free to voice feedback and concerns in the [Issues](https://github.com/sabiq-khan/fantasy-football-matchups/issues).
