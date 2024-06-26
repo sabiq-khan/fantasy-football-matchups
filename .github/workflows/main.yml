@@ -13,10 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies (Linux/macOS)
-        if: runner.os != 'windows-latest'
-        run: sudo apt update && sudo apt install python3-dev libffi-dev build-essential
-
       - name: Install Chocolatey (Windows)
         if: runner.os == 'windows-latest'
         run: |
